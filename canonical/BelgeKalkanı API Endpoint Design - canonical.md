@@ -31,7 +31,7 @@ MVP Scope
 
 - MVP Validations (Computational Core):
   - UBL-TR 1.2 schema validation and canonical JSON transformation.
-  - PII masking validation before response generation for supplier.vkn, supplier.tckn, customer.vkn, payment.iban, payment.bic, supplier.contact.phone, supplier.contact.email.
+  - PII masking validation before response generation for supplier.vkn, supplier.tckn, customer.vkn, payment.iban, payment.bic, supplier.contact.phone, supplier.contact.email, delivery.street, delivery.city.
   - Deterministic H-series and C-series rule validation.
   - Review Priority Scoring (RPS) validation with defined weights and thresholds.
   - JSON canonicalization via RFC 8785 prior to SHA-256 hashing where stated.
@@ -84,13 +84,13 @@ Workflows
 
 | Field | Type/Format | Required? | Notes (as stated) |
 |---|---|---|---|
-| document_metadata | object | Not explicitly stated | Includes file_name, ubl_version, customization_id, document_id, document_uuid, issue_date, currency_code |
-| masked_entities | object | Not explicitly stated | Includes masked supplier/customer/payment identifiers and contact data |
-| analysis_results | object | Not explicitly stated | Includes status and triggered_rules entries |
-| rps_data | object | Not explicitly stated | Includes hard/context points, total_score, priority_category |
-| evidence_pack_hash | string | Not explicitly stated | SHA-256 based evidence hash |
-| input_file_hash | string | Not explicitly stated | SHA-256 based input file hash |
-| processed_at | datetime string | Not explicitly stated | Processing timestamp |
+| document_metadata | object | Yes | Includes file_name, ubl_version, customization_id, document_id, document_uuid, issue_date, currency_code |
+| masked_entities | object | Yes | Includes masked supplier/customer/payment identifiers and contact data |
+| analysis_results | object | Yes | Includes status and triggered_rules entries |
+| rps_data | object | Yes | Includes hard/context points, total_score, priority_category |
+| evidence_pack_hash | string | Yes | SHA-256 based evidence hash |
+| input_file_hash | string | Yes | SHA-256 based input file hash |
+| processed_at | datetime string | Yes | Processing timestamp |
 
 - Workflow B — Generate Narration (POST /api/v1/narrate)
 
@@ -108,17 +108,17 @@ Workflows
 | Field | Type/Format | Required? | Notes (as stated) |
 |---|---|---|---|
 | evidence_pack_hash | string | Yes | Client must provide this value to start narration process |
-| language | string | Not explicitly stated | Example value: tr |
-| narration_context | object | Not explicitly stated | Example includes rule_ids and evidence_pointers |
+| language | string | Yes | Example value: tr |
+| narration_context | object | Optional | Example includes rule_ids and evidence_pointers |
 
   - Response Payload (200 OK):
 
 | Field | Type/Format | Required? | Notes (as stated) |
 |---|---|---|---|
-| evidence_pack_hash | string | Not explicitly stated | Hash reference for narrated evidence |
-| audit_trace | array<object> | Not explicitly stated | Includes step_sequence, rule_reference, narration_text |
-| llm_model_version | string | Not explicitly stated | Example model version provided |
-| generated_at | datetime string | Not explicitly stated | Narration generation timestamp |
+| evidence_pack_hash | string | Yes | Hash reference for narrated evidence |
+| audit_trace | array<object> | Yes | Includes step_sequence, rule_reference, narration_text |
+| llm_model_version | string | Yes | Example model version provided |
+| generated_at | datetime string | Yes | Narration generation timestamp |
 
 - Workflow C — Verify Audit Log (GET /api/v1/audit/{invoice_id_hash})
 
@@ -141,10 +141,10 @@ Workflows
 
 | Field | Type/Format | Required? | Notes (as stated) |
 |---|---|---|---|
-| validation_status | string | Not explicitly stated | Example value: VERIFIED_AND_ANCHORED |
-| audit_record | object | Not explicitly stated | Includes entry_id, timestamp, sequence_number, prev_hash, doc_uuid, invoice_id, actor_identity, input_file_hash, evidence_pack, rps_data, audit_trace, signature |
-| merkle_proof | object | Not explicitly stated | Includes leaf_hash, merkle_path, signed_tree_head |
-| cryptographic_mechanisms | object | Not explicitly stated | Includes canonicalization_scheme, hashing_algorithm, signature_algorithm |
+| validation_status | string | Yes | Example value: VERIFIED_AND_ANCHORED |
+| audit_record | object | Yes | Includes entry_id, timestamp, sequence_number, prev_hash, doc_uuid, invoice_id, actor_identity, input_file_hash, evidence_pack, rps_data, audit_trace, signature |
+| merkle_proof | object | Yes | Includes leaf_hash, merkle_path, signed_tree_head |
+| cryptographic_mechanisms | object | Yes | Includes canonicalization_scheme, hashing_algorithm, signature_algorithm |
 
 Canonical Consistency Checks (MVP)
 - Deterministic Rule Catalog:
@@ -152,9 +152,9 @@ Canonical Consistency Checks (MVP)
 | Check ID | Category | Trigger Condition (as stated) | Evidence Fields (as stated) |
 |---|---|---|---|
 | H001 | Hard | metadata.ubl_version != "2.1" OR metadata.customization_id != "TR1.2" | metadata.ubl_version, metadata.customization_id |
-| H002 | Hard | abs(sum(lines.net_amount) - totals.line_extension) > 0 | totals.line_extension, lines.net_amount |
-| H003 | Hard | abs(sum(tax.subtotals.tax_amount) - tax.total_tax_amount) > 0 | tax.total_tax_amount, tax.subtotals.tax_amount |
-| H004 | Hard | abs(totals.payable_amount - (totals.line_extension + totals.charge_total - totals.allowance_total + tax.total_tax_amount)) > 0 | totals.payable_amount, totals.line_extension, totals.allowance_total, tax.total_tax_amount |
+| H002 | Hard | abs(sum(lines.net_amount) - totals.line_extension) > 0.01 | totals.line_extension, lines.net_amount |
+| H003 | Hard | abs(sum(tax.subtotals.tax_amount) - tax.total_tax_amount) > 0.01 | tax.total_tax_amount, tax.subtotals.tax_amount |
+| H004 | Hard | abs(totals.payable_amount - (totals.line_extension + totals.charge_total - totals.allowance_total + tax.total_tax_amount)) > 0.01 | totals.payable_amount, totals.line_extension, totals.allowance_total, tax.total_tax_amount |
 | H005 | Hard | references.despatch_id array is empty or undefined | references.despatch_id |
 | H006 | Hard | any references.despatch_date[i] > document.issue_date | references.despatch_date, document.issue_date |
 | H007 | Hard | (supplier.tckn exists AND mod10(supplier.tckn) != 0) OR (supplier.vkn exists AND length(supplier.vkn) != 10) | supplier.vkn, supplier.tckn |
@@ -171,7 +171,8 @@ Canonical Consistency Checks (MVP)
 - Review Priority Scoring (RPS):
   - Hard check points: 10 per triggered Hard rule.
   - Context check points: 1 per triggered Context rule.
-  - Priority thresholds: 0-9 Low, 10-29 Medium, >=30 High.
+  - Graph check points: 5 per triggered Graph rule.
+  - Priority thresholds: 0-24 Low, 25-59 Medium, 60-100 High.
 
 - Standard Error Responses (RFC 7807):
 
@@ -205,10 +206,11 @@ Operational Notes
 - Merkle tree inclusion evidence and signed tree head concepts are described for external verification.
 - RFC 8785 canonicalization is stated for deterministic hashing input preparation.
 - Timestamp recording is described in ISO-8601 UTC with NTP synchronization.
+- Default API operation profile:
+  - Rate limit: 100 req/min per API key.
+  - Idempotency for `/api/v1/analyze`: `metadata.uuid` based.
+  - Max payload size: 10MB.
+  - Request timeout: 30s.
 
 Open Questions
-- Not explicitly stated in this file: complete required/optional markers for response payload fields across all endpoints.
-- Not explicitly stated in this file: rate limiting policy.
-- Not explicitly stated in this file: idempotency behavior for POST endpoints.
-- Not explicitly stated in this file: maximum payload size and timeout limits.
-- Not explicitly stated in this file: whether language and narration_context are mandatory or optional in /api/v1/narrate.
+- Closed in D2/D3: required/optional markers, rate limiting, idempotency, payload limits, and `/api/v1/narrate` field requirements are standardized.

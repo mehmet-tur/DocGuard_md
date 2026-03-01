@@ -64,20 +64,144 @@ The goal is reconstructability: if all file contracts below are respected, the p
 - `lines[].unit_code`
 - `lines[].item_name`
 
-### 3.3 Required rule-trigger anchors
-- `H002`: `abs(sum(lines[].net_amount) - totals.line_extension) > tolerance`
-- `H007`: supplier ID format/checksum violations for `supplier.vkn` / `supplier.tckn`
-- `C001`: `len(lines) > threshold`
-- `C004`: `(totals.allowance_total / totals.line_extension) > threshold`
-- `G001`: one `payment.iban` linked to multiple distinct seller IDs
+### 3.3 Required rule catalog and trigger anchors
+
+#### 3.3.1 Hard checks (`H001`-`H015`)
+| Rule ID | Trigger anchor |
+|---|---|
+| `H001` | `metadata.ubl_version != "2.1" OR metadata.customization_id != "TR1.2"` |
+| `H002` | `abs(sum(lines[].net_amount) - totals.line_extension) > 0.01` |
+| `H003` | `abs(sum(tax.subtotals.tax_amount) - tax.total_tax_amount) > 0.01` |
+| `H004` | `abs(totals.payable_amount - (totals.line_extension + totals.charge_total - totals.allowance_total + tax.total_tax_amount)) > 0.01` |
+| `H005` | `references.despatch_id` is empty or undefined |
+| `H006` | `any(references.despatch_date[i] > document.issue_date)` |
+| `H007` | `(supplier.vkn exists and length != 10) OR (supplier.tckn exists and !mod10)` |
+| `H008` | `payment.iban exists and mod97(payment.iban) != 1` |
+| `H009` | duplicate `metadata.uuid` exists in system |
+| `H010` | any `lines.item_name` is empty or missing |
+| `H011` | `length(document.id) != 16 OR regex mismatch /^[A-Z0-9]{16}$/` |
+| `H012` | `document.issue_date` or `references.despatch_date` is not valid ISO-8601 |
+| `H013` | `tax.subtotals.scheme_id` not in registered VAT/SCT codes |
+| `H014` | `document.currency_code` does not match ISO-4217 pattern |
+| `H015` | `lines.unit_code == "C62" AND lines.quantity % 1 != 0` |
+
+#### 3.3.2 Context checks (`C001`-`C008`)
+| Rule ID | Trigger anchor |
+|---|---|
+| `C001` | `len(lines) > 20` |
+| `C002` | `document.currency_code != "TRY"` |
+| `C003` | `payment.iban` exists and prefix is not `"TR"` |
+| `C004` | `(totals.allowance_total / totals.line_extension) > 0.5` |
+| `C005` | supplier has both `supplier.vkn` and `supplier.tckn`, or has neither |
+| `C006` | `supplier.vkn == customer.vkn` OR `supplier.tckn == customer.tckn` |
+| `C007` | `min(references.despatch_date) >= document.issue_date` |
+| `C008` | `sum(e_irsaliye.deliveredQuantity) != sum(lines.quantity)` |
+
+#### 3.3.3 Graph checks (`G001`-`G008`)
+| Rule ID | Trigger anchor |
+|---|---|
+| `G001` | multiple distinct seller IDs share one `payment.iban` |
+| `G002` | first-time relationship amount is `> 3x` historical median |
+| `G003` | `>N` invoices between two nodes in `<24h` window |
+| `G004` | closed cycle path `(A -> B -> C -> A)` with minimal net transfer |
+| `G005` | high lexical similarity + different IDs + shared `payment.iban` |
+| `G006` | invoice chain path depth `> 3` without intermediate despatch markers |
+| `G007` | supplier VKN appears in authorized contact metadata context |
+| `G008` | symmetric bidirectional invoicing with near-zero net balance |
+
+#### 3.3.4 Global validation tolerance contract
+- Monetary comparison tolerance is fixed at `0.01`.
+- Monetary computations must use deterministic decimal handling (2-decimal comparison boundary).
 
 ### 3.4 Required Evidence Pack shape
-- `check_id` (string)
+- `check_id` (string, pattern `^[HCG][0-9]{3}$`)
 - `check_type` (`HARD` | `CONTEXT` | `GRAPH`)
 - `fields` (object, canonical field-value map)
 - `metrics` (object, numeric computations)
 - `paths` (array of JSON pointer strings)
 - `audit_trace` (array, deterministic trace text)
+- Top-level contract: `additionalProperties: false`
+- Required minimum keys: `check_id`, `check_type`, `fields`, `metrics`
+
+### 3.5 RPS Parameters (Bounded Saturating Model)
+- Category score formulas:
+- `score_H = min(cap_H, sum(weight_H_i * trigger_H_i))`
+- `score_C = min(cap_C, sum(weight_C_i * trigger_C_i))`
+- `score_G = min(cap_G, sum(weight_G_i * trigger_G_i))`
+- `rps_total = min(100, score_H + score_C + score_G)`
+- Indicator contract: `trigger_*_i` is deterministic (`1` if triggered, `0` otherwise).
+
+| Parameter | Canonical value |
+|---|---|
+| `cap_H` | `70` |
+| `cap_C` | `40` |
+| `cap_G` | `40` |
+| `weight_H` | `10` |
+| `weight_C` | `1` |
+| `weight_G` | `5` |
+| `global_cap` | `100` |
+
+### 3.6 Triage SLA Bands
+| Priority band | Score range | Queue target | SLA target |
+|---|---|---|---|
+| `High` | `60-100` | Critical / Forensic queue | `< 1 hour` |
+| `Medium` | `25-59` | Standard Auditor queue | `< 4 hours` |
+| `Low` | `0-24` | Auto-Close / Audit-only queue | `N/A` |
+
+### 3.7 Tokenization Gateway Contract (PII Boundary)
+- Required pre-LLM masking fields (canonical minimum):
+- `supplier.vkn`
+- `supplier.tckn`
+- `customer.vkn`
+- `payment.iban`
+- `payment.bic`
+- `supplier.contact.phone`
+- `supplier.contact.email`
+- `delivery.street`
+- `delivery.city`
+- Deterministic token prefix contract:
+- `VKN_`
+- `TCKN_`
+- `IBAN_`
+- `COMPANY_`
+- `EMAIL_`
+- `PHONE_`
+- Lifecycle rules:
+- Raw PII cannot be sent to narrator.
+- Reverse mapping store must be isolated from narration runtime.
+- Token lifespan is session-scoped and must be auto-purged after report generation.
+
+### 3.8 Graph Model Contract (MVP)
+| Node type | Canonical anchor |
+|---|---|
+| `Entity(VKN)` | `supplier.vkn`, `customer.vkn` |
+| `Entity(TCKN)` | `supplier.tckn`, `customer.tckn` |
+| `Financial(IBAN)` | `payment.iban` |
+| `Document(UUID)` | `metadata.uuid` |
+| `Logistics(Despatch)` | `references.despatch_id` |
+| `CorporateName` | `supplier.name`, `customer.name` |
+
+| Edge type | Canonical semantics |
+|---|---|
+| `ISSUED_TO` | Seller -> Buyer transaction relation |
+| `PAID_VIA` | Seller -> IBAN payment relation |
+| `LINKED_TO` | Document -> Despatch relation |
+| `DECLARED_BY` | VKN -> CorporateName relation |
+| `SAME_CONTACT` | Shared contact metadata relation |
+
+### 3.9 Configuration Parameters (Deterministic Defaults)
+- `monetary_tolerance = 0.01`
+- `c001_line_count_threshold = 20`
+- `c004_allowance_ratio_threshold = 0.5`
+- `g002_first_edge_amount_multiplier = 3`
+- `g003_window_hours = 24`
+- `g006_path_depth_threshold = 3` (trigger if `> 3`)
+- `materialized_view_refresh = nightly + post-batch-ingestion`
+- Central threshold governance files:
+- `config/rule_thresholds.yaml`
+- `config/graph_thresholds.yaml`
+- `config/no_synonyms_dictionary.yaml`
+- `config/tokenization_pii_fields.yaml`
 
 ## 4) File-by-File Canonical Contracts
 
@@ -309,6 +433,19 @@ The goal is reconstructability: if all file contracts below are respected, the p
 - static demo dataset `triageData` with signal codes and RPS labels
 - Depends on: IDs/classes in `index.html` and classes in `style.css`.
 - Reconstruction rule: selector names and data attributes must remain synchronized with HTML.
+
+### 4.24 `canonical/* - canonical.md` (and `- canonical.pdf.md`)
+- Canonical purpose: normalized "03 — Canonical Output" pages for each source artifact.
+- Required content:
+- exactly one canonical page per source file
+- header format: `✅ 03 — Canonical Output — <EXACT_SOURCE_FILE_NAME>`
+- source-verified structured summary with deterministic section order
+- Open Questions list for unresolved or non-explicit requirements
+- no URLs, citation blocks, or image marker artifacts
+- Depends on: corresponding source file only (single-input isolation).
+- Reconstruction rule:
+- when a source file changes, its paired canonical file must be updated in the same change set
+- canonical filenames must include `- canonical` suffix for discoverability
 
 ## 5) Project Re-establishment Sequence (Deterministic Build Order)
 

@@ -1,0 +1,30 @@
+version: "1.0"
+
+defaults:
+  g002_first_edge_amount_multiplier: 3
+  g003_window_hours: 24
+  g006_path_depth_threshold: 3
+  g006_trigger_condition: "path_depth > g006_path_depth_threshold"
+
+refresh:
+  materialized_view: "nightly + post-batch-ingestion"
+
+checks:
+  G001:
+    shared_iban_distinct_seller_vkn_min: 2
+  G002:
+    amount_multiplier_vs_historical_median: 3
+  G003:
+    window_hours: 24
+    invoice_count_threshold: null
+  G004:
+    cycle_pattern: "A->B->C->A"
+  G005:
+    lexical_similarity_threshold: null
+  G006:
+    path_depth_threshold: 3
+    trigger_when_path_depth_gt: 3
+  G007:
+    cross_role_vkn_match_required: true
+  G008:
+    reciprocal_amount_variance_threshold: null

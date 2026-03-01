@@ -1,0 +1,25 @@
+version: "1.0"
+session_lifecycle: "session-only"
+purge_trigger: "auto-purge after report generation"
+
+token_prefixes:
+  supplier.vkn: "VKN_"
+  supplier.tckn: "TCKN_"
+  customer.vkn: "VKN_"
+  payment.iban: "IBAN_"
+  payment.bic: "BIC_"
+  supplier.contact.phone: "PHONE_"
+  supplier.contact.email: "EMAIL_"
+  delivery.street: "ADDR_"
+  delivery.city: "CITY_"
+
+pii_fields:
+  - supplier.vkn
+  - supplier.tckn
+  - customer.vkn
+  - payment.iban
+  - payment.bic
+  - supplier.contact.phone
+  - supplier.contact.email
+  - delivery.street
+  - delivery.city

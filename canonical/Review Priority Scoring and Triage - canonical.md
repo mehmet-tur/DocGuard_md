@@ -78,6 +78,7 @@ Canonical Consistency Checks (MVP)
 | Graph cap | 40 |
 | Hard rule weight | 10 (per source recommendation section) |
 | Context rule weight | 1 (per source recommendation section) |
+| Graph rule weight | 5 (standardized bounded model contribution) |
 
 - Hard Consistency Checks (H-Series):
 
@@ -134,7 +135,7 @@ Evidence Output Contract
 | Field | Type/Format | Constraint (pattern/min/max) | Meaning (as stated) |
 |---|---|---|---|
 | `check_id` | string | pattern `^[HCG][0-9]{3}$` | Triggered rule/signal identifier |
-| `check_type` | string | enum declared in schema snippet | Classification of evaluation |
+| `check_type` | string | enum: `HARD`, `CONTEXT`, `GRAPH` | Classification of evaluation |
 | `description` | string | none stated | Concise check summary |
 | `fields` | object | `additionalProperties: true` | Values extracted from e-Fatura canonical paths |
 | `metrics` | object | `additionalProperties: false`; includes numeric properties (`discrepancy_value`, `line_count`, `allowance_ratio`, `unique_vkn_count`) | Computed quantitative support metrics |
@@ -170,5 +171,4 @@ Operational Notes
 Open Questions
 - Not explicitly stated: module version value.
 - Not explicitly stated: full textual equations for bounded score formula (equations in source are image-embedded).
-- Not explicitly stated: explicit enum members for `check_type` in Evidence Pack snippet.
 - Not explicitly stated: exact numeric OCR confidence threshold for deterministic failure gating.

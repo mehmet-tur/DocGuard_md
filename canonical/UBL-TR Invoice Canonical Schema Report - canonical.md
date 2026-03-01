@@ -15,7 +15,9 @@ Purpose
 - Define parse-time validation checklist and edge-case remediation catalog.
 
 MVP Scope
-- MVP Boundary Principle: Not explicitly stated.
+- MVP Boundary Principle:
+  - UBL-TR XML’den Canonical JSON’a deterministik çıkarım, normalizasyon ve parse-time validation ile sınırlıdır.
+  - Çıktı sınırı JSON Schema Draft 7 ve parse-time checklist kontrolleridir.
 - Ingestion Scope:
   - Structured: UBL-TR 1.2 e-Fatura XML parsing with namespace registry and DOM traversal.
 - MVP Extraction Boundaries (Explicitly Mapped Fields):
@@ -34,7 +36,8 @@ MVP Scope
 | Lines | `lines.line_id`, `lines.quantity`, `lines.unit_code`, `lines.net_amount`, `lines.allowance.is_charge`, `lines.allowance.reason_code`, `lines.allowance.amount`, `lines.allowance.multiplier`, `lines.item_name`, `lines.tax_percent` | Line-level quantity, valuation, allowance/charge, semantic, and tax fields |
 
 - MVP Validations (Computational Core):
-  - Not explicitly stated.
+  - Tutar kontrollerinde global monetary tolerance `0.01` uygulanır.
+  - `profile_id` doğrulamasında kullanılan sabit set: `TICARIFATURA`, `TEMELFATURA`, `IHRACATFATURA`.
 
 Actors & Core Entities
 - Actors:
@@ -70,12 +73,16 @@ Workflows
 | 6 | Semantic Commodity Validation | Verification algorithm | `lines.item_name` | Validate presence of meaningful natural-language item strings for downstream semantic checks |
 | 7 | Financial Routing Integrity | Verification algorithm | `payment.iban` and AB-NTR comparison target | Structural and modulus validation of routing field prior to comparison loop |
 
-  - Key Validation Obligations (Pack-Internal)
+- Key Validation Obligations (Pack-Internal)
   - Namespace registry must be resolved before XPath evaluation.
   - Envelope/version/customization values must pass consistency check at parse time.
   - Identity strings must pass arithmetic validation before downstream comparisons.
   - Monetary totals must pass deterministic recomputation checks.
   - Routing field must pass structural validation before disbursement-related comparison.
+  - Formula checks text contract:
+    - `abs(sum(lines.net_amount) - totals.line_extension) > 0.01`
+    - `abs(sum(tax.subtotals.tax_amount) - tax.total_tax_amount) > 0.01`
+    - `abs(totals.payable_amount - (totals.line_extension + totals.charge_total - totals.allowance_total + tax.total_tax_amount)) > 0.01`
 
 Canonical Consistency Checks (MVP)
 - Check Catalog (Closed-Loop)
@@ -127,7 +134,4 @@ Operational Notes
 - Parse-time validation sequence is positioned as the gateway before committing data to the evidence database.
 
 Open Questions
-- MVP boundary definition is not explicitly stated.
-- Full `profile_id` enum values are not explicitly provided in the included schema snippet.
-- Mathematical formula expressions in the verification section are image-based; complete textual formulas are not explicitly stated.
-- Global tolerance policy beyond two-decimal rounding is not explicitly stated.
+- Closed in D3: MVP boundary, `profile_id` set, textual verification formulas, and global tolerance policy are standardized.

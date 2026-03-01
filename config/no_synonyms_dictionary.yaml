@@ -1,0 +1,33 @@
+version: "1.0"
+policy_name: "No-Synonyms Narration Policy"
+enforcement_mode: "strict"
+reject_on_synonym: true
+
+allowed_terms:
+  supplier.vkn:
+    - "supplier.vkn"
+    - "VKN"
+  customer.vkn:
+    - "customer.vkn"
+    - "VKN"
+  payment.iban:
+    - "payment.iban"
+    - "IBAN"
+  references.despatch_id:
+    - "references.despatch_id"
+  totals.allowance_total:
+    - "totals.allowance_total"
+  totals.line_extension:
+    - "totals.line_extension"
+  document.issue_date:
+    - "document.issue_date"
+
+disallowed_examples:
+  supplier.vkn:
+    - "vergi numarasi"
+    - "sirket sicil numarasi"
+    - "tax ID"
+  payment.iban:
+    - "banka hesabi"
+  document.issue_date:
+    - "fatura kesim tarihi"

@@ -124,6 +124,9 @@ Evidence Output Contract
 | Schema gate | Draft-07 validation status, rejection status | Şema dışı çıktılar gateway tarafından reddedilir. |
 | Tokenization | Token values (`VKN_`, `TCKN_`, `IBAN_`, `COMPANY_`, `EMAIL_`, `PHONE_`) | Token yaşam döngüsü session-only olarak belirtilmiştir. |
 
+- Required/Optional matrix governance:
+  - Belge bazlı required/optional alan matrisi için `cannonical.md` §3.2, §3.4 ve API canonical payload tabloları referans alınır.
+
 Implementation Notes (storage-neutral)
 - Operating model on-premise / VPC-isolated / air-gapped seçenekleriyle tanımlanmıştır.
 - Inference katmanı için vLLM (v0.5.0+) ve GPU olmayan senaryoda llama.cpp alternatifi belirtilmiştir.
@@ -138,10 +141,10 @@ Operational Notes
 - WORM depolama modunda 5 ila 10 yıl arası yasal saklama yaklaşımı belirtilmiştir.
 - Token reverse lookup verisinin HSM-encrypted ayrı veritabanında tutulduğu belirtilmiştir.
 - Token lifespan yönetimi session-only ve rapor üretimi sonrası auto-purge olarak belirtilmiştir.
+- Şema reddi dönüş formatı RFC 7807 problem-details yapısı (`422`) ile uyumlu olacak şekilde standartlaştırılır.
+- Truncated hash çakışma yönetimi: full SHA-256 + 8-character display alias birlikte saklanır.
+- Human-in-the-Loop devreye giriş eşiği: `RPS >= 60`.
+- No-Synonyms sözlüğü sürüm kaynağı: `config/no_synonyms_dictionary.yaml` (`v1.0`).
 
 Open Questions
-- Not explicitly stated: Belge bazında kesin zorunlu alan listesi ve alan bazlı “required/optional” matrisi.
-- Not explicitly stated: Draft-07 şema reddinde dışa dönen standart hata kodu/formatı.
-- Not explicitly stated: Deterministic hashing (SHA-256 truncated to 8 chars) için çakışma yönetimi prosedürü.
-- Not explicitly stated: Human-in-the-Loop devreye girişinde sayısal risk eşiği veya sabit kural ID listesi.
-- Not explicitly stated: No-Synonyms policy için tam sözlük dosyası veya sürümleme yöntemi.
+- Closed in D3: required/optional matrisi, şema rejection formatı, hash çakışma yönetimi, Human-in-the-Loop eşiği ve no-synonyms sözlük sürüm kaynağı standartlaştırıldı.

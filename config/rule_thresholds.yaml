@@ -1,0 +1,37 @@
+version: "1.0"
+
+defaults:
+  monetary_tolerance: 0.01
+
+rps:
+  caps:
+    hard: 70
+    context: 40
+    graph: 40
+    total: 100
+  weights:
+    hard: 10
+    context: 1
+    graph: 5
+  priority_bands:
+    high:
+      min: 60
+      max: 100
+    medium:
+      min: 25
+      max: 59
+    low:
+      min: 0
+      max: 24
+
+rules:
+  H002:
+    formula: "abs(sum(lines.net_amount) - totals.line_extension) > monetary_tolerance"
+  H003:
+    formula: "abs(sum(tax.subtotals.tax_amount) - tax.total_tax_amount) > monetary_tolerance"
+  H004:
+    formula: "abs(totals.payable_amount - (totals.line_extension + totals.charge_total - totals.allowance_total + tax.total_tax_amount)) > monetary_tolerance"
+  C001:
+    line_count_threshold: 20
+  C004:
+    allowance_ratio_threshold: 0.5

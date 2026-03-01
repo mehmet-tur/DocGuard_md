@@ -97,6 +97,14 @@ Evidence Output Contract
 | Metrics | Hacim, tarih, varyans, yaş, net denge vb. | Sinyal tablosunda tanımlı metrikler kullanılmalıdır. |
 | Explainability text | Signal-specific açıklama metni | Nötr ve açıklayıcı olmalıdır. |
 
+- Evidence Pack required field set (cross-module standard):
+  - `check_id`
+  - `check_type` (`HARD`, `CONTEXT`, `GRAPH`)
+  - `fields`
+  - `metrics`
+  - `paths`
+  - `audit_trace`
+
 - Example Evidence (G002) — Compact Table
 
 | Field | Value (as stated) |
@@ -115,13 +123,12 @@ Implementation Notes (storage-neutral)
 - G004 için WITH RECURSIVE yaklaşımı ve pratik MVP sınırı olarak `depth < 5` örneği verilmiştir.
 - G003 ve G001 gibi yüksek frekanslı toplulaştırmalar için materialized view yaklaşımı belirtilmiştir.
 - Hub detection örneğinde `PAID_VIA` üzerinden `COUNT(DISTINCT source_node) > 1` koşulu ile IBAN hub gösterimi verilmiştir.
+- Merkezi eşik yönetimi için `config/graph_thresholds.yaml` referansı kullanılır.
 
 Operational Notes
 - Materialized view yenilemesi periyodik olarak (ör. nightly veya batch ingestion sonrası) belirtilmiştir.
 - Signal çıktıları doğrudan son karar yerine sonraki validation/inceleme akışına evidence sağlar.
+- False positive mitigation kuralları MVP aşamasında opsiyonel, sonraki fazlarda zorunlulaştırılabilir.
 
 Open Questions
-- Not explicitly stated: G001–G008 için üretim ortamında tekil eşik konfigürasyonlarının merkezi parametre dosyası.
-- Not explicitly stated: Evidence Pack JSON şemasının required alan listesi ve sürümleme yöntemi.
-- Not explicitly stated: False positive mitigation maddelerinin zorunlu/opsiyonel işletim kuralı.
-- Not explicitly stated: Materialized view refresh için sabit bir zamanlama değeri.
+- Closed in D2/D3: eşik parametre dosyası, required alan seti, false-positive işletim kuralı ve materialized view zamanlama varsayılanı standartlaştırıldı.

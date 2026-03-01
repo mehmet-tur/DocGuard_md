@@ -94,7 +94,7 @@ Workflows
 | From Table | To Table | Relationship | Join Keys (as stated) |
 | --- | --- | --- | --- |
 | invoices | evidence_packs | 1-to-N (`engine_generates`) | `invoices.id` -> `evidence_packs.invoice_id` |
-| invoices | audit_logs | 1-to-N (`immutable_history_trigger`) | Not explicitly stated in this file: direct join key |
+| invoices | audit_logs | 1-to-N (`immutable_history_trigger`) | `audit_logs.doc_uuid` -> `invoices.invoice_uuid` |
 | invoices | graph_edges | N-to-M (`nodes_extracted_from`) | Masked token node extraction; explicit SQL join key not stated |
 | graph_edges | graph_edges | N-to-N (`network_traversal`) | Self-referencing adjacency traversal (explicit key pair not stated) |
 
@@ -110,6 +110,7 @@ Canonical Consistency Checks (MVP)
 | Privilege enforcement | Revoked destructive privileges | DB role grants | UPDATE/DELETE/TRUNCATE/ALTER yetki yokluğu validation | Permission audit evidence |
 | Cryptographic chain | previous/current hash continuity | audit_logs sequence | Zincir kırığı mismatch tespiti | Integrity discrepancy evidence |
 | Graph traversal safety | Recursive cycle control | graph_edges recursive queries | Döngü tespit ve sonsuz traversal engeli validation | Traversal/cycle evidence |
+| Graph edge uniqueness | Edge duplication control | graph_edges rows | `UNIQUE(source_entity_id, target_entity_id, edge_type)` validation | Duplicate-edge rejection evidence |
 
 Evidence Output Contract
 - Output Artifacts (as stated)
@@ -141,9 +142,8 @@ Operational Notes
   - Fiziksel depolama izolasyonu.
 - ACID transaction bütünlüğüyle invoice-evidence-audit adımlarının atomik yürütülmesi belirtilmiştir.
 - HA/streaming replication senaryolarında token ve hash tabanlı veri akışı yaklaşımı belirtilmiştir.
+- Partition bakım varsayılanı: aylık otomatik partition oluşturma.
+- Hash zinciri doğrulama varsayılanı: saatlik zamanlanmış doğrulama görevi.
 
 Open Questions
-- Not explicitly stated in this file: `audit_logs` ile `invoices` arasındaki fiziksel FK alanı.
-- Not explicitly stated in this file: `graph_edges` için uniqueness constraint tanımı.
-- Not explicitly stated in this file: Partition bakım/oluşturma otomasyon sıklığı.
-- Not explicitly stated in this file: Hash zinciri doğrulama görevlerinin zamanlama frekansı.
+- Closed in D3: `audit_logs.doc_uuid -> invoices.invoice_uuid`, `graph_edges` uniqueness kuralı, partition sıklığı ve hash doğrulama zamanlaması standartlaştırıldı.

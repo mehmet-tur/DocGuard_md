@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocGuard — BelgeKalkanı | Akıllı Belge Doğrulama Platformu</title>
+    <meta name="description" content="DocGuard (BelgeKalkanı) — UBL-TR fatura doğrulama, risk analizi ve sahtecilik tespiti platformu.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- NAVBAR                                          -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-left">
+            <div class="logo" id="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 40 40" fill="none">
+                        <rect x="4" y="6" width="24" height="30" rx="3" stroke="url(#logoGrad)" stroke-width="2.5" fill="none"/>
+                        <path d="M10 14h12M10 19h12M10 24h8" stroke="url(#logoGrad)" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="28" cy="28" r="10" fill="#0f0f1a" stroke="url(#logoGrad2)" stroke-width="2.5"/>
+                        <path d="M25 28l2 2 4-4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="4" y1="6" x2="28" y2="36">
+                                <stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/>
+                            </linearGradient>
+                            <linearGradient id="logoGrad2" x1="18" y1="18" x2="38" y2="38">
+                                <stop stop-color="#6366f1"/><stop offset="1" stop-color="#22c55e"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="logo-text">DocGuard</span>
+                <span class="logo-badge">β</span>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <a href="#dashboard" class="nav-link active" data-screen="dashboard">
+                <span class="nav-icon">📊</span> Panel
+            </a>
+            <a href="#triage" class="nav-link" data-screen="triage">
+                <span class="nav-icon">🔍</span> Triyaj Kuyruğu
+            </a>
+            <a href="#review" class="nav-link" data-screen="review">
+                <span class="nav-icon">📋</span> İnceleme
+            </a>
+            <a href="#reports" class="nav-link" data-screen="reports">
+                <span class="nav-icon">📈</span> Raporlar
+            </a>
+        </div>
+        <div class="navbar-right">
+            <div class="notification-bell" id="notifBell">
+                <span>🔔</span>
+                <span class="notif-badge">3</span>
+            </div>
+            <div class="user-profile" id="userProfile">
+                <div class="user-avatar">AY</div>
+                <div class="user-info">
+                    <span class="user-name">Ahmet Yılmaz</span>
+                    <span class="user-role">Banka Denetçisi — <span class="access-badge">🔓 Tam Metin</span></span>
+                </div>
+                <span class="dropdown-arrow">▾</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SCREEN 1: DASHBOARD                             -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <main class="screen active" id="screen-dashboard">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <span class="bc-item">DocGuard</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-item active">Yönetici Paneli</span>
+        </div>
+
+        <div class="section-header">
+            <h1>Yönetici & Operasyon Paneli</h1>
+            <div class="live-indicator">
+                <span class="live-dot"></span> Canlı
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="metric-card metric-green">
+                <div class="metric-icon-wrap"><span class="metric-icon">✅</span></div>
+                <div class="metric-body">
+                    <span class="metric-label">İşlenen Evrak (Bugün)</span>
+                    <span class="metric-value" data-target="1452">0</span>
+                    <span class="metric-suffix">Adet</span>
+                </div>
+                <div class="metric-sparkline metric-sparkline-green"></div>
+            </div>
+            <div class="metric-card metric-amber">
+                <div class="metric-icon-wrap"><span class="metric-icon">⏳</span></div>
+                <div class="metric-body">
+                    <span class="metric-label">Bekleyen (Triyaj)</span>
+                    <span class="metric-value" data-target="34">0</span>
+                    <span class="metric-suffix">Adet</span>
+                </div>
+                <div class="metric-sparkline metric-sparkline-amber"></div>
+            </div>
+            <div class="metric-card metric-red">
+                <div class="metric-icon-wrap"><span class="metric-icon">🚫</span></div>
+                <div class="metric-body">
+                    <span class="metric-label">Reddedilen / Riskli</span>
+                    <span class="metric-value" data-target="12">0</span>
+                    <span class="metric-suffix">Adet</span>
+                </div>
+                <div class="metric-sparkline metric-sparkline-red"></div>
+            </div>
+            <div class="metric-card metric-shield">
+                <div class="metric-icon-wrap"><span class="metric-icon">🛡️</span></div>
+                <div class="metric-body">
+                    <span class="metric-label">Engellenen Risk (Aylık)</span>
+                    <span class="metric-value currency" data-target="4250000">0</span>
+                    <span class="metric-suffix">TL</span>
+                </div>
+                <div class="metric-sparkline metric-sparkline-shield"></div>
+            </div>
+        </div>
+
+        <!-- Upload Area -->
+        <div class="upload-section">
+            <div class="section-title">
+                <span>📥</span> Hızlı Yükleme Alanı
+            </div>
+            <div class="upload-dropzone" id="dropzone">
+                <div class="dropzone-inner">
+                    <div class="dropzone-icon">
+                        <svg viewBox="0 0 80 80" fill="none">
+                            <circle cx="40" cy="40" r="36" stroke="url(#dzGrad)" stroke-width="2" stroke-dasharray="6 4" opacity="0.5"/>
+                            <path d="M40 26v20M32 34l8-8 8 8" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M26 48h28" stroke="#6366f1" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+                            <defs>
+                                <linearGradient id="dzGrad" x1="4" y1="4" x2="76" y2="76">
+                                    <stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h3>Sürükle ve Bırak</h3>
+                    <p>UBL-TR XML veya ZIP paketlerinizi buraya bırakın</p>
+                    <button class="btn btn-primary" id="browseBtn">
+                        <span>📂</span> Bilgisayardan Seçin
+                    </button>
+                    <span class="upload-hint">Aynı anda maks. 500 fatura • 3 saniye içinde sonuçlanır</span>
+                </div>
+                <!-- Upload progress -->
+                <div class="upload-progress hidden" id="uploadProgress">
+                    <div class="progress-info">
+                        <span class="progress-filename" id="progressFilename">faturalar_2026.zip</span>
+                        <span class="progress-percent" id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-status" id="progressStatus">Yükleniyor...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-section">
+            <div class="section-title">
+                <span>🕐</span> Son İşlemler
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table" id="recentTable">
+                    <thead>
+                        <tr>
+                            <th>Durum</th>
+                            <th>İşlem ID</th>
+                            <th>Tarih / Saat</th>
+                            <th>Dosya Adı</th>
+                            <th>Sonuç</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SCREEN 2: TRIAGE QUEUE                          -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <main class="screen" id="screen-triage">
+        <div class="breadcrumb">
+            <span class="bc-item">DocGuard</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-item active">Triyaj Kuyruğu</span>
+        </div>
+
+        <div class="section-header">
+            <h1>Triyaj & Risk Kuyruğu</h1>
+            <div class="queue-count">
+                <span class="queue-badge">34</span> Bekleyen İş
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar" id="filterBar">
+            <div class="filter-group">
+                <button class="filter-chip active" data-filter="all">Tümü</button>
+                <button class="filter-chip" data-filter="pending">Sadece Bekleyenler</button>
+                <button class="filter-chip" data-filter="critical">RPS > 70 (Kritik)</button>
+                <button class="filter-chip" data-filter="today">Bugün</button>
+            </div>
+            <div class="filter-search">
+                <input type="text" placeholder="🔎 İşlem ID veya sinyal ara..." class="search-input" id="triageSearch">
+            </div>
+        </div>
+
+        <!-- Triage Table -->
+        <div class="table-wrapper">
+            <table class="data-table triage-table" id="triageTable">
+                <thead>
+                    <tr>
+                        <th>Durum</th>
+                        <th>Öncelik Skoru (RPS)</th>
+                        <th>Dosya / İşlem ID</th>
+                        <th>Yükleme Zamanı</th>
+                        <th>Tespit Edilen Sinyaller</th>
+                        <th>Aksiyon</th>
+                    </tr>
+                </thead>
+                <tbody id="triageBody">
+                    <!-- filled by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="page-btn" disabled>‹ Önceki</button>
+            <span class="page-info">Sayfa <strong>1</strong> / 4</span>
+            <button class="page-btn">Sonraki ›</button>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SCREEN 3: REVIEW / INSPECTION                   -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <main class="screen" id="screen-review">
+        <div class="breadcrumb">
+            <span class="bc-item">DocGuard</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-item">Triyaj Kuyruğu</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-item active">DOC-2026-9912</span>
+        </div>
+
+        <div class="section-header">
+            <h1>Denetçi İnceleme Ekranı</h1>
+            <div class="review-meta">
+                <span class="rps-badge rps-critical">RPS: 95</span>
+                <span class="review-time">⏱ Oturum: 00:00</span>
+            </div>
+        </div>
+
+        <div class="review-layout">
+            <!-- Left Panel: Invoice Details -->
+            <div class="review-panel review-left">
+                <div class="panel-header">
+                    <h2>📄 Fatura Bilgileri</h2>
+                    <span class="masking-badge">🔓 Frontend Masking Çözüldü</span>
+                </div>
+                <div class="panel-card">
+                    <div class="masking-notice">
+                        <span class="masking-icon">🔐</span>
+                        <p>Sunucudan <code>VKN_8A2B4C1D</code> olarak gelen şifreli VKN, yetkiniz doğrultusunda tarayıcıda anlık olarak açık metne çevrilmiştir.</p>
+                    </div>
+                    <div class="invoice-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Satıcı</span>
+                            <span class="detail-value">
+                                <strong>Demir Lojistik A.Ş.</strong>
+                                <span class="vkn-tag">VKN: 1234567890</span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Alıcı</span>
+                            <span class="detail-value">
+                                <strong>Çelik Üretim Ltd.</strong>
+                                <span class="vkn-tag">VKN: 0987654321</span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Fatura No</span>
+                            <span class="detail-value"><code>GIB2026000001234</code></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Fatura Tarihi</span>
+                            <span class="detail-value">27.02.2026</span>
+                        </div>
+                        <div class="detail-row highlight">
+                            <span class="detail-label">Toplam Tutar</span>
+                            <span class="detail-value amount">₺ 120.000,00</span>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Lines -->
+                    <div class="invoice-lines-header">
+                        <h3>Fatura Kalemleri</h3>
+                    </div>
+                    <table class="data-table compact">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Kalem Açıklaması</th>
+                                <th>Miktar</th>
+                                <th>Birim Fiyat</th>
+                                <th>Net Tutar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Çelik Profil 40x40</td>
+                                <td>100 Adet</td>
+                                <td>₺ 500,00</td>
+                                <td class="text-danger"><strong>₺ 50.000,00</strong></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Nakliye Hizmeti</td>
+                                <td>1 Adet</td>
+                                <td>₺ 50.000,00</td>
+                                <td class="text-danger"><strong>₺ 50.000,00</strong></td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="4" class="text-right"><strong>Kalem Toplamı:</strong></td>
+                                <td class="text-danger"><strong>₺ 100.000,00</strong></td>
+                            </tr>
+                            <tr class="total-row discrepancy">
+                                <td colspan="4" class="text-right"><strong>Beyan Edilen Toplam:</strong></td>
+                                <td class="text-danger flash"><strong>₺ 120.000,00</strong></td>
+                            </tr>
+                            <tr class="total-row discrepancy">
+                                <td colspan="4" class="text-right"><strong>⚠️ FARK:</strong></td>
+                                <td class="text-danger flash"><strong>₺ 20.000,00</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Panel: Finding Cards -->
+            <div class="review-panel review-right">
+                <div class="panel-header">
+                    <h2>🚨 Bulgu Kartları</h2>
+                    <span class="findings-count">2 Bulgu</span>
+                </div>
+
+                <!-- Finding Card 1 -->
+                <div class="finding-card finding-critical">
+                    <div class="finding-header">
+                        <div class="finding-severity severity-critical">KRİTİK</div>
+                        <h3>H002 — Kalem Tutarı Tutarlılığı</h3>
+                        <span class="finding-type">Hard Rule</span>
+                    </div>
+                    <div class="finding-body">
+                        <div class="finding-narrative">
+                            <h4>📝 Sistem Anlatımı (Audit Trace)</h4>
+                            <p><code>totals.line_extension</code> değeri <strong class="text-danger">120.000,00</strong>'dir. Ancak <code>lines[].net_amount</code> dizisindeki tutarların matematiksel toplamı <strong class="text-success">100.000,00</strong>'dir. Aradaki fark <strong class="text-danger">20.000,00</strong>'dir ve tolerans sınırını (0.00) aşmaktadır.</p>
+                        </div>
+                        <div class="finding-evidence">
+                            <h4>🔍 Kanonik Veri Kanıtları</h4>
+                            <div class="evidence-grid">
+                                <div class="evidence-item">
+                                    <span class="evidence-path">/totals/line_extension</span>
+                                    <span class="evidence-value text-danger">120000.00</span>
+                                </div>
+                                <div class="evidence-item">
+                                    <span class="evidence-path">/lines/0/net_amount</span>
+                                    <span class="evidence-value">50000.00</span>
+                                </div>
+                                <div class="evidence-item">
+                                    <span class="evidence-path">/lines/1/net_amount</span>
+                                    <span class="evidence-value">50000.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="finding-calc">
+                            <span class="calc-label">📉 Hesaplanan Matematiksel Fark:</span>
+                            <span class="calc-value text-danger">₺ 20.000,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Finding Card 2 -->
+                <div class="finding-card finding-high">
+                    <div class="finding-header">
+                        <div class="finding-severity severity-high">YÜKSEK</div>
+                        <h3>G001 — Ortak IBAN Tespiti</h3>
+                        <span class="finding-type">Graph Signal</span>
+                    </div>
+                    <div class="finding-body">
+                        <div class="finding-narrative">
+                            <h4>📝 Sistem Anlatımı (Audit Trace)</h4>
+                            <p>Satıcı <strong>Demir Lojistik A.Ş.</strong> ve alıcı <strong>Çelik Üretim Ltd.</strong> firmalarının ödeme talimatlarında aynı IBAN numarası (<code>TR12 0001 0012 3456 7890 1234 56</code>) tespit edilmiştir. Bu durum, firmalar arası para dolaşımı (döngüsel ticaret) şüphesi doğurmaktadır.</p>
+                        </div>
+                        <div class="finding-evidence">
+                            <h4>🔍 Kanonik Veri Kanıtları</h4>
+                            <div class="evidence-grid">
+                                <div class="evidence-item">
+                                    <span class="evidence-path">/payment/iban</span>
+                                    <span class="evidence-value text-warning">TR12 0001 0012 ****</span>
+                                </div>
+                                <div class="evidence-item">
+                                    <span class="evidence-path">/graph/shared_iban_count</span>
+                                    <span class="evidence-value text-danger">3 firma</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disposition Panel -->
+        <div class="disposition-panel">
+            <div class="disposition-header">
+                <h2>⚖️ Karar & Geri Bildirim</h2>
+                <p>Bulguları inceledikten sonra nihaî kararınızı aşağıdan seçiniz.</p>
+            </div>
+            <div class="disposition-actions">
+                <button class="dispo-btn dispo-reject" id="btnReject">
+                    <span class="dispo-icon">🔴</span>
+                    <span class="dispo-label">Gerçek Pozitif — Reddet</span>
+                    <span class="dispo-desc">Sahtecilik veya ciddi tutarsızlık onaylandı</span>
+                </button>
+                <button class="dispo-btn dispo-approve" id="btnApprove">
+                    <span class="dispo-icon">🟢</span>
+                    <span class="dispo-label">Yanlış Pozitif — Onayla</span>
+                    <span class="dispo-desc">Sistem hatalı alarm verdi</span>
+                </button>
+                <button class="dispo-btn dispo-benign" id="btnBenign">
+                    <span class="dispo-icon">🟡</span>
+                    <span class="dispo-label">Zararsız Anomali — İstisnai Onay</span>
+                    <span class="dispo-desc">Hata var ama işleme engel değil</span>
+                </button>
+            </div>
+            <div class="disposition-feedback">
+                <button class="feedback-btn" id="btnLLMFeedback">
+                    🚩 Üretilen metinde mantıksal/terimsel hata bildir <span class="feedback-sub">(Veri Bilimi ekibine gönder)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div class="modal-overlay hidden" id="successModal">
+            <div class="modal-content">
+                <div class="modal-icon">✅</div>
+                <h2>Karar Kaydedildi</h2>
+                <p id="modalMessage">DOC-2026-9912 başarıyla işlendi.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="modalNextBtn">Sonraki Belge ➔</button>
+                    <button class="btn btn-ghost" id="modalQueueBtn">Kuyruğa Dön</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- SCREEN 4: REPORTS (Placeholder)                 -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <main class="screen" id="screen-reports">
+        <div class="breadcrumb">
+            <span class="bc-item">DocGuard</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-item active">Raporlar</span>
+        </div>
+        <div class="section-header">
+            <h1>Raporlar & Analitik</h1>
+        </div>
+        <div class="placeholder-screen">
+            <div class="placeholder-icon">📊</div>
+            <h2>Yakında Geliyor</h2>
+            <p>Detaylı rapor ve analitik modülü geliştirme aşamasındadır.</p>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
